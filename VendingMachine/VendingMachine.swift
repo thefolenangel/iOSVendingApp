@@ -42,10 +42,22 @@ struct Item: VendingItem {
     let price: Double
     var quantity: Int
 }
-
+enum InventoryError: Error {
+    case InvalidRes
+    case ConvError
+    
+}
 class PListConverter{
-    static func someMethod(){
-        //test
+    static func dictionary(fromFile name: String, ofType type:String) throws -> [String: AnyObject] {
+        //get a path to the resource
+        guard let path = Bundle.main.path(forResource: name, ofType: type) else {
+            throw InventoryError.InvalidRes
+        }
+        guard let dicionary = NSDictionary(contentsOf: path) as? [String: AnyObject] else {
+            throw InventoryError.ConvError
+        }
+        
+        return dicionary
     }
 }
 class FoodVendingMachine: VendingMachine {
