@@ -8,7 +8,7 @@
 
 import Foundation
 
-enum VendingSelection {
+enum VendingSelection: String {
     case soda
     case dietSoda
     case chips
@@ -45,7 +45,7 @@ struct Item: VendingItem {
 enum InventoryError: Error {
     case InvalidRes
     case ConvError
-    
+    case InvalidSelect
 }
 class PListConverter{
     static func dictionary(fromFile name: String, ofType type:String) throws -> [String: AnyObject] {
@@ -53,11 +53,26 @@ class PListConverter{
         guard let path = Bundle.main.path(forResource: name, ofType: type) else {
             throw InventoryError.InvalidRes
         }
-        guard let dicionary = NSDictionary(contentsOf: path) as? [String: AnyObject] else {
+        guard let dicionary = NSDictionary(contentsOfFile: path) as? [String: AnyObject] else {
             throw InventoryError.ConvError
         }
         
         return dicionary
+    }
+}
+class InventoryUnarchiver {
+    static func VendingInvertory(fromDictonary dict: [String: AnyObject]) throws -> [VendingSelection:VendingItem] {
+        var inventory: [VendingSelection : VendingItem] = [:]
+        for (key, value) in dict {
+            if let itemDic = value as? [String: AnyObject], let price = itemDic["price"] as? Double, let quant = itemDic["quantity"] as? Int {
+                let item = Item (price: price, quantity: quant)
+                guard let selection = VendingSelection (rawValue: key) else {
+                    throw InventoryError.InvalidSelect
+                }
+                inventory.updateValue(item, forKey: selection)
+            }
+        }
+        return inventory
     }
 }
 class FoodVendingMachine: VendingMachine {
