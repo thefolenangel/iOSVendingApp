@@ -20,6 +20,9 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
     @IBOutlet weak var priceLabel: UILabel!
     
     let vendingMachine: VendingMachine
+    var currentSelection: VendingSelection?
+    var quantity = 1
+    
     required init?(coder aDecoder: NSCoder) {
         do{
             let dictionary = try PListConverter.dictionary(fromFile: "VendingInventory", ofType: "plist")
@@ -58,7 +61,18 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
         
         collectionView.collectionViewLayout = layout
     }
-    
+    // MARK: - VENDING MACHINE
+    @IBAction func purchase(){
+        if let  currentSelection = currentSelection {
+            do {
+                try vendingMachine.vend(quantity, currentSelection)
+            } catch {
+                // FIXME : Error handling needed
+            }
+        } else {
+            // FIXME: alert use
+        }
+    }
     // MARK: UICollectionViewDataSource
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
@@ -76,6 +90,7 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         updateCell(having: indexPath, selected: true)
+        currentSelection = vendingMachine.selection[indexPath.row]
     }
     
     func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {
